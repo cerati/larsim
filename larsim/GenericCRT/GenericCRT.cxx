@@ -80,6 +80,15 @@ sim::AuxDetSimChannel sim::GenericCRTUtility::GetAuxDetSimChannelByNumber(
   size_t ad_id_no = 9999;
   size_t ad_sen_id_no = 9999;
 
+  std::cout << "Geo NAuxDets=" << fGeo->NAuxDets() << /*" NAuxDetSensitive=" << fGeo->NAuxDetSensitive() <<*/ std::endl;
+  for (size_t ai=0;ai<fGeo->NAuxDets();ai++) {
+    auto ad = fGeo->AuxDet(ai);
+    std::cout << "ai=" << ai << " name=" << ad.Name() << " Nsens=" << ad.NSensitiveVolume() << std::endl;
+    for (size_t vi=0;vi<ad.NSensitiveVolume();vi++) {
+      auto sv = ad.SensitiveVolume(vi);
+      std::cout << "\tvi=" << vi << " " << sv.AuxDetInfo() << std::endl;
+    }
+  }
   for (auto const& auxDetHit : InputHitVector) {
 
     double xcoordinate = (auxDetHit.GetEntryX() + auxDetHit.GetExitX()) / 2.0;
@@ -89,8 +98,16 @@ sim::AuxDetSimChannel sim::GenericCRTUtility::GetAuxDetSimChannelByNumber(
 
     if (auxDetHit.GetID() == inputchannel) // this is the channel we want.
     {
+      std::cout << "Found an AuxDetHit with ID " << auxDetHit.GetID() << " inputchannel=" << inputchannel << " x,y,z=" << xcoordinate << ", " << ycoordinate <<  ", " << zcoordinate << std::endl;
       // Find the IDs given the hit position
-      fGeo->FindAuxDetSensitiveAtPosition(worldPos, ad_id_no, ad_sen_id_no, 0.0001);
+      fGeo->FindAuxDetSensitiveAtPosition(worldPos, ad_id_no, ad_sen_id_no, 1000/*0.0001*/);
+
+      auto ad = fGeo->AuxDet(ad_id_no);
+      std::cout << "name=" << ad.Name() << " AuxDet ID " << ad_id_no << " Sens ID " << ad_sen_id_no  << " Nsens=" << ad.NSensitiveVolume() << std::endl;
+      for (size_t vi=0;vi<ad.NSensitiveVolume();vi++) {
+	auto sv = ad.SensitiveVolume(vi);
+	std::cout << "\tvi=" << vi << " " << sv.AuxDetInfo() << std::endl;
+      }
 
       mf::LogDebug("GenericCRTUtility")
         << "Found an AuxDetHit with ID " << auxDetHit.GetID() << " for AuxDet ID " << ad_id_no
